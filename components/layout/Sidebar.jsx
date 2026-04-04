@@ -160,7 +160,7 @@ function UserProfile({ user, collapsed }) {
     <div
       className={cn(
         'flex items-center gap-3 px-4 py-3 rounded-xl mx-2 mb-2',
-        'bg-white/[0.03] border border-white/[0.06] transition-all duration-200',
+        'bg-slate-800/50 border border-white/[0.06] transition-all duration-200',
         collapsed && 'justify-center px-0'
       )}
     >
@@ -178,7 +178,7 @@ function UserProfile({ user, collapsed }) {
           </div>
         )}
         {/* Online dot */}
-        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-[#0F172A]" />
+        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-black" />
       </div>
 
       {/* Info */}

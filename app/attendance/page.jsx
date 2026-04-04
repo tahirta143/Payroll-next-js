@@ -137,141 +137,139 @@ function CalendarHeatmap({ records, month, year, onMonthChange }) {
   const leaveCount = monthRecords.filter((r) => r.status === "leave").length;
 
   return (
-    <div className="glass-card p-5">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-heading font-semibold text-slate-200">
-            Attendance Calendar
-          </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {startOfMonth.format("MMMM YYYY")}
-          </p>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={prevMonth}
-            className="w-7 h-7 rounded-lg flex items-center justify-center
-                       bg-slate-800/60 border border-white/[0.07]
-                       text-slate-400 hover:text-white hover:bg-slate-700/60
-                       transition-all duration-150"
-          >
-            <ChevronLeft size={14} strokeWidth={2.5} />
-          </button>
-          <button
-            onClick={() => onMonthChange(dayjs().month() + 1, dayjs().year())}
-            disabled={isCurrentMonth}
-            className={cn(
-              "px-2.5 py-1 rounded-lg text-xs font-medium",
-              "border transition-all duration-150",
-              isCurrentMonth
-                ? "border-white/[0.04] text-slate-600 cursor-not-allowed"
-                : "border-teal-500/30 text-teal-400 hover:bg-teal-500/10 cursor-pointer",
-            )}
-          >
-            Today
-          </button>
-          <button
-            onClick={nextMonth}
-            disabled={isCurrentMonth}
-            className={cn(
-              "w-7 h-7 rounded-lg flex items-center justify-center",
-              "bg-slate-800/60 border border-white/[0.07]",
-              "text-slate-400 transition-all duration-150",
-              isCurrentMonth
-                ? "opacity-40 cursor-not-allowed"
-                : "hover:text-white hover:bg-slate-700/60",
-            )}
-          >
-            <ChevronRight size={14} strokeWidth={2.5} />
-          </button>
-        </div>
-      </div>
-
-      {/* Monthly summary pills */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {[
-          {
-            label: "Present",
-            count: presentCount,
-            cls: "bg-green-500/10 text-green-400 border-green-500/20",
-          },
-          {
-            label: "Late",
-            count: lateCount,
-            cls: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-          },
-          {
-            label: "Absent",
-            count: absentCount,
-            cls: "bg-red-500/10 text-red-400 border-red-500/20",
-          },
-          {
-            label: "Leave",
-            count: leaveCount,
-            cls: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold",
-              s.cls,
-            )}
-          >
-            <span>{s.count}</span>
-            <span className="font-normal opacity-80">{s.label}</span>
+    <div className="glass-card p-4 sm:p-5 lg:p-6 overflow-x-auto">
+      <div className="min-w-[320px] lg:min-w-0">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+          <div>
+            <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+              Attendance Calendar
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {startOfMonth.format("MMMM YYYY")}
+            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 mb-1">
-        {WEEKDAY_LABELS.map((d) => (
-          <div
-            key={d}
-            className="text-center text-[10px] font-semibold text-slate-600 py-1 uppercase tracking-wider"
-          >
-            {d}
-          </div>
-        ))}
-      </div>
-
-      {/* Day cells */}
-      <div className="grid grid-cols-7 gap-1">
-        {cells.map((cell) => {
-          if (cell.type === "blank") {
-            return <div key={cell.key} />;
-          }
-          return (
-            <div
-              key={cell.key}
-              title={
-                cell.status ? `${cell.dateStr}: ${cell.status}` : cell.dateStr
-              }
-              className={cn("cal-day text-xs select-none", getDayClass(cell))}
+          {/* Month Navigation */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={prevMonth}
+              className="w-8 h-8 rounded-lg flex items-center justify-center
+                     bg-secondary/60 border border-border
+                     text-muted-foreground hover:text-foreground hover:bg-secondary
+                     transition-all duration-150"
             >
-              {cell.date}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-white/[0.05]">
-        {[
-          { label: "Present", color: "bg-green-500/40" },
-          { label: "Late", color: "bg-amber-500/40" },
-          { label: "Absent", color: "bg-red-500/40" },
-          { label: "Leave", color: "bg-blue-500/40" },
-          { label: "Half Day", color: "bg-violet-500/40" },
-          { label: "Weekend", color: "bg-slate-700/60" },
-        ].map((l) => (
-          <div key={l.label} className="flex items-center gap-1.5">
-            <span className={cn("w-3 h-3 rounded-sm", l.color)} />
-            <span className="text-[11px] text-slate-500">{l.label}</span>
+              <ChevronLeft size={16} strokeWidth={2} />
+            </button>
+            <button
+              onClick={() => onMonthChange(dayjs().month() + 1, dayjs().year())}
+              disabled={isCurrentMonth}
+              className={cn(
+                "px-3 py-2 rounded-lg text-sm font-medium",
+                "border transition-all duration-150",
+                isCurrentMonth
+                  ? "border-border opacity-40 cursor-not-allowed text-muted-foreground"
+                  : "border-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
+              )}
+            >
+              Today
+            </button>
+            <button
+              onClick={nextMonth}
+              className="w-8 h-8 rounded-lg flex items-center justify-center
+                     bg-secondary/60 border border-border
+                     text-muted-foreground hover:text-foreground hover:bg-secondary
+                     transition-all duration-150"
+            >
+              <ChevronRight size={16} strokeWidth={2} />
+            </button>
           </div>
-        ))}
+        </div>
+
+        {/* Monthly summary pills */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[
+            {
+              label: "Present",
+              count: presentCount,
+              cls: "bg-green-500/10 text-green-400 border-green-500/20",
+            },
+            {
+              label: "Late",
+              count: lateCount,
+              cls: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+            },
+            {
+              label: "Absent",
+              count: absentCount,
+              cls: "bg-red-500/10 text-red-400 border-red-500/20",
+            },
+            {
+              label: "Leave",
+              count: leaveCount,
+              cls: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+            },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs font-semibold",
+                s.cls
+              )}
+            >
+              <span>{s.count}</span>
+              <span className="font-normal opacity-80">{s.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Weekday headers - Responsive */}
+        <div className="grid grid-cols-7 gap-0.5 mb-1 text-xs">
+          {WEEKDAY_LABELS.map((d) => (
+            <div
+              key={d}
+              className="text-center text-muted-foreground py-2 font-semibold uppercase tracking-wider"
+            >
+              {d}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar Grid - Responsive */}
+        <div className="grid grid-cols-7 gap-0.5 text-xs">
+          {cells.map((cell) => {
+            if (cell.type === "blank") {
+              return <div key={cell.key} />;
+            }
+            return (
+              <div
+                key={cell.key}
+                title={
+                  cell.status ? `${cell.dateStr}: ${cell.status}` : cell.dateStr
+                }
+                className={cn("cal-day text-xs select-none", getDayClass(cell))}
+              >
+                {cell.date}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-border">
+          {[
+            { label: "Present", color: "bg-green-500/40" },
+            { label: "Late", color: "bg-amber-500/40" },
+            { label: "Absent", color: "bg-red-500/40" },
+            { label: "Leave", color: "bg-blue-500/40" },
+            { label: "Half Day", color: "bg-violet-500/40" },
+            { label: "Weekend", color: "bg-secondary/60" },
+          ].map((l) => (
+            <div key={l.label} className="flex items-center gap-1.5">
+              <span className={cn("w-3 h-3 rounded-sm", l.color)} />
+              <span className="text-xs text-muted-foreground">{l.label}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

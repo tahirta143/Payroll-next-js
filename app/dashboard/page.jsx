@@ -78,15 +78,15 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
     <div className="glass-card px-3 py-2.5 text-xs space-y-1 min-w-[120px]">
-      <p className="font-semibold text-slate-200 mb-1.5">{label}</p>
+      <p className="font-semibold text-foreground mb-1.5">{label}</p>
       {payload.map((entry, i) => (
         <div key={i} className="flex items-center gap-2">
           <span
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ background: entry.color }}
           />
-          <span className="text-slate-400 capitalize">{entry.name}:</span>
-          <span className="font-semibold text-slate-200 ml-auto pl-3">
+          <span className="text-muted-foreground capitalize">{entry.name}:</span>
+          <span className="font-semibold text-foreground ml-auto pl-3">
             {entry.value}
           </span>
         </div>
@@ -104,7 +104,7 @@ function PieTooltip({ active, payload }) {
           className="w-2.5 h-2.5 rounded-full"
           style={{ background: payload[0].payload.fill }}
         />
-        <span className="text-slate-300 capitalize">{payload[0].name}:</span>
+        <span className="text-muted-foreground capitalize">{payload[0].name}:</span>
         <span className="font-bold text-white ml-1">{payload[0].value}</span>
       </div>
     </div>
@@ -140,7 +140,7 @@ function KpiCard({
     <div className="kpi-card group">
       {/* Top row */}
       <div className="flex items-start justify-between">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider leading-tight">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider leading-tight">
           {title}
         </p>
         <div
@@ -178,12 +178,12 @@ function KpiCard({
 
       {/* Subtitle */}
       {subtitle && (
-        <p className="text-xs text-slate-500 leading-snug">{subtitle}</p>
+        <p className="text-xs text-muted-foreground leading-snug">{subtitle}</p>
       )}
 
       {/* Trend label */}
       {trendLabel && (
-        <p className="text-[11px] text-slate-600 mt-0.5">{trendLabel}</p>
+        <p className="text-[11px] text-foreground mt-0.5">{trendLabel}</p>
       )}
 
       {/* Bottom accent bar */}
@@ -191,242 +191,6 @@ function KpiCard({
         className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-300"
         style={{ color: color?.replace("text-", "") }}
       />
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-//  Check-in Panel
-// ─────────────────────────────────────────────
-
-function CheckInPanel({ onAction }) {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [todayRecord, setTodayRecord] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [currentTime, setCurrentTime] = useState("");
-  const [currentDate, setCurrentDate] = useState("");
-
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      setCurrentTime(
-        now.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true,
-        }),
-      );
-      setCurrentDate(
-        now.toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-      );
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const res = await attendanceAPI.getToday();
-        setTodayRecord(res.data.data);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, []);
-
-  const handleCheckIn = async () => {
-    setActionLoading(true);
-    try {
-      let latitude = null;
-      let longitude = null;
-      try {
-        const pos = await new Promise((resolve, reject) =>
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 5000,
-          }),
-        );
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-      } catch {
-        // geolocation optional
-      }
-
-      const res = await attendanceAPI.checkIn({ latitude, longitude });
-      setTodayRecord(res.data.data);
-      toast.success(
-        res.data.message || "Checked in successfully! Have a great day! 🎯",
-      );
-      onAction?.();
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Check-in failed. Please try again.",
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleCheckOut = async () => {
-    setActionLoading(true);
-    try {
-      const res = await attendanceAPI.checkOut();
-      setTodayRecord(res.data.data);
-      toast.success("Checked out successfully! See you tomorrow! 👋");
-      onAction?.();
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Check-out failed. Please try again.",
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const isCheckedIn = !!todayRecord?.check_in_time;
-  const isCheckedOut = !!todayRecord?.check_out_time;
-  const statusCfg = todayRecord ? getStatusConfig(todayRecord.status) : null;
-
-  return (
-    <div className="glass-card p-5 flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-heading font-semibold text-slate-200">
-          Today&apos;s Attendance
-        </h3>
-        {statusCfg && (
-          <span className={statusCfg.badgeClass}>
-            <span className={cn("w-1.5 h-1.5 rounded-full", statusCfg.dot)} />
-            {statusCfg.label}
-          </span>
-        )}
-      </div>
-
-      {/* Clock */}
-      <div className="text-center py-3 border-y border-white/[0.06]">
-        <p className="text-3xl font-mono font-bold text-white tabular-nums tracking-tight">
-          {currentTime || "—"}
-        </p>
-        <p className="text-xs text-slate-500 mt-1">{currentDate}</p>
-      </div>
-
-      {/* Times */}
-      {loading ? (
-        <div className="space-y-2">
-          <div className="skeleton h-4 w-full rounded" />
-          <div className="skeleton h-4 w-3/4 rounded" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          <div
-            className="flex flex-col items-center justify-center px-3 py-2.5 rounded-lg
-                          bg-green-500/[0.07] border border-green-500/15"
-          >
-            <p className="text-[10px] font-semibold text-green-500/70 uppercase tracking-wider mb-1">
-              Check In
-            </p>
-            <p className="text-base font-mono font-bold text-green-400">
-              {todayRecord?.check_in_time
-                ? formatTime(todayRecord.check_in_time)
-                : "—"}
-            </p>
-          </div>
-          <div
-            className="flex flex-col items-center justify-center px-3 py-2.5 rounded-lg
-                          bg-blue-500/[0.07] border border-blue-500/15"
-          >
-            <p className="text-[10px] font-semibold text-blue-500/70 uppercase tracking-wider mb-1">
-              Check Out
-            </p>
-            <p className="text-base font-mono font-bold text-blue-400">
-              {todayRecord?.check_out_time
-                ? formatTime(todayRecord.check_out_time)
-                : "—"}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Work hours */}
-      {todayRecord?.work_hours && (
-        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-800/40 border border-white/[0.05]">
-          <span className="text-xs text-slate-500">Work hours today</span>
-          <span className="text-sm font-semibold text-teal-400">
-            {formatWorkHours(todayRecord.work_hours)}
-          </span>
-        </div>
-      )}
-
-      {/* Action button */}
-      {!loading && (
-        <>
-          {!isCheckedIn && (
-            <button
-              onClick={handleCheckIn}
-              disabled={actionLoading}
-              className="btn-primary w-full flex items-center justify-center gap-2"
-            >
-              {actionLoading ? (
-                <span className="w-4 h-4 spinner" />
-              ) : (
-                <CheckCircle2 size={16} strokeWidth={2.5} />
-              )}
-              <span>{actionLoading ? "Checking in…" : "Check In"}</span>
-            </button>
-          )}
-
-          {isCheckedIn && !isCheckedOut && (
-            <button
-              onClick={handleCheckOut}
-              disabled={actionLoading}
-              className="btn w-full bg-blue-600/20 text-blue-400 border border-blue-500/30
-                         hover:bg-blue-600 hover:text-white hover:border-blue-600
-                         flex items-center justify-center gap-2"
-            >
-              {actionLoading ? (
-                <span className="w-4 h-4 spinner" />
-              ) : (
-                <XCircle size={16} strokeWidth={2.5} />
-              )}
-              <span>{actionLoading ? "Checking out…" : "Check Out"}</span>
-            </button>
-          )}
-
-          {isCheckedIn && isCheckedOut && (
-            <div
-              className="flex items-center justify-center gap-2 py-2 rounded-lg
-                            bg-green-500/10 border border-green-500/20"
-            >
-              <CheckCircle2
-                size={14}
-                className="text-green-400"
-                strokeWidth={2.5}
-              />
-              <span className="text-sm font-semibold text-green-400">
-                Attendance complete for today
-              </span>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Location note */}
-      <p className="flex items-center gap-1.5 text-[11px] text-slate-600">
-        <MapPin size={10} />
-        Location captured automatically on check-in
-      </p>
     </div>
   );
 }
@@ -513,24 +277,24 @@ function ActivityFeed({ activities, loading }) {
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-slate-200 leading-snug">
+              <p className="text-sm text-foreground leading-snug">
                 <span className="font-semibold text-white">
                   {item.user?.name || "Unknown"}
                 </span>{" "}
-                <span className="text-slate-400">
+                <span className="text-muted-foreground">
                   {isCheckIn
                     ? `checked in${item.meta?.check_out_time ? " & out" : ""}`
                     : `requested ${item.meta?.leave_type} leave`}
                 </span>
               </p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[11px] text-slate-600">
+                <span className="text-[11px] text-foreground">
                   {timeAgo(item.time)}
                 </span>
                 {item.user?.department?.name && (
                   <>
-                    <span className="text-slate-700">·</span>
-                    <span className="text-[11px] text-slate-600">
+                    <span className="text-foreground">·</span>
+                    <span className="text-[11px] text-foreground">
                       {item.user.department.name}
                     </span>
                   </>
@@ -841,7 +605,7 @@ function StatusDonut({ stats, loading }) {
           <span className="text-2xl font-heading font-bold text-white">
             {total}
           </span>
-          <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">
+          <span className="text-[10px] text-foreground font-medium uppercase tracking-wider">
             Total
           </span>
         </div>
@@ -877,9 +641,8 @@ function QuickAction({ icon: Icon, label, href, color, bg }) {
     <Link
       href={href}
       className={cn(
-        "flex flex-col items-center gap-2 p-3 rounded-xl",
-        "border border-white/[0.06] hover:border-white/[0.12]",
-        "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover group",
+        "flex flex-col items-center gap-2 p-3 rounded-xl dashboard-card",
+        "transition-all duration-200 hover:-translate-y-0.5 group",
         bg,
       )}
     >
@@ -1009,8 +772,8 @@ export default function DashboardPage() {
               value={stats?.totalEmployees ?? "—"}
               subtitle="Active in the system"
               icon={Users}
-              color="text-teal-400"
-              bg="bg-teal-500/10"
+              color="text-white"
+              bg="bg-white/10"
               loading={statsLoading}
             />
             <KpiCard
@@ -1018,8 +781,8 @@ export default function DashboardPage() {
               value={stats?.presentToday ?? "—"}
               subtitle={`${stats?.lateToday ?? 0} arrived late`}
               icon={UserCheck}
-              color="text-green-400"
-              bg="bg-green-500/10"
+              color="text-white"
+              bg="bg-white/10"
               loading={statsLoading}
             />
             <KpiCard
@@ -1027,8 +790,8 @@ export default function DashboardPage() {
               value={stats?.absentToday ?? "—"}
               subtitle="No check-in recorded"
               icon={UserX}
-              color="text-red-400"
-              bg="bg-red-500/10"
+              color="text-white"
+              bg="bg-white/10"
               loading={statsLoading}
             />
             <KpiCard
@@ -1036,8 +799,8 @@ export default function DashboardPage() {
               value={stats?.onLeaveToday ?? "—"}
               subtitle={`${stats?.pendingLeaves ?? 0} requests pending`}
               icon={CalendarOff}
-              color="text-blue-400"
-              bg="bg-blue-500/10"
+              color="text-white"
+              bg="bg-white/10"
               loading={statsLoading}
             />
           </div>
@@ -1069,8 +832,8 @@ export default function DashboardPage() {
               }
               subtitle="Hours worked today"
               icon={Timer}
-              color="text-green-400"
-              bg="bg-green-500/10"
+              color="text-white"
+              bg="bg-white/10"
               loading={statsLoading}
             />
             <KpiCard
@@ -1081,17 +844,17 @@ export default function DashboardPage() {
               }
               subtitle="Total days used this year"
               icon={CalendarOff}
-              color="text-blue-400"
-              bg="bg-blue-500/10"
+              color="text-white"
+              bg="bg-white/10"
               loading={statsLoading}
             />
             <KpiCard
               title="Pending Requests"
-              value={stats?.pendingLeaves ?? "—"}
+              value={stats?.pendingLeaves ?? "—" }
               subtitle="Leave requests awaiting approval"
               icon={AlertCircle}
-              color="text-orange-400"
-              bg="bg-orange-500/10"
+              color="text-white"
+              bg="bg-white/10"
               loading={statsLoading}
             />
           </div>
@@ -1104,22 +867,22 @@ export default function DashboardPage() {
               {
                 label: "Late Arrivals",
                 value: stats?.lateToday ?? "—",
-                color: "text-amber-400",
-                dot: "bg-amber-500",
+                color: "text-white",
+                dot: "bg-white/500",
                 icon: Timer,
               },
               {
                 label: "Half Day",
                 value: stats?.halfDayToday ?? "—",
-                color: "text-violet-400",
-                dot: "bg-violet-500",
+                color: "text-white",
+                dot: "bg-white/500",
                 icon: Clock,
               },
               {
                 label: "Pending Leaves",
                 value: stats?.pendingLeaves ?? "—",
-                color: "text-orange-400",
-                dot: "bg-orange-500",
+                color: "text-white",
+                dot: "bg-white/500",
                 icon: AlertCircle,
               },
               {
@@ -1140,7 +903,7 @@ export default function DashboardPage() {
                     className={cn("w-2 h-2 rounded-full flex-shrink-0", item.dot)}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-500 truncate">
+                    <p className="text-xs text-foreground truncate">
                       {item.label}
                     </p>
                     <p
@@ -1170,13 +933,13 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* ── Left: Trend Chart (Admin only) or Employee Leave Balance ── */}
           {isAdmin ? (
-            <div className="lg:col-span-2 glass-card p-5">
+            <div className="lg:col-span-2 dashboard-card">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-heading font-semibold text-slate-200">
+                  <h3 className="text-sm font-heading font-semibold text-foreground">
                     30-Day Attendance Trend
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-foreground mt-0.5">
                     Daily check-in counts over the past month
                   </p>
                 </div>
@@ -1197,13 +960,13 @@ export default function DashboardPage() {
               <TrendLineChart data={trend} loading={trendLoading} />
             </div>
           ) : (
-            <div className="lg:col-span-2 glass-card p-5">
+            <div className="lg:col-span-2 dashboard-card">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-heading font-semibold text-slate-200">
+                  <h3 className="text-sm font-heading font-semibold text-foreground">
                     Your Leave Balance
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-foreground mt-0.5">
                     Days used vs. available this year
                   </p>
                 </div>
@@ -1211,7 +974,7 @@ export default function DashboardPage() {
               {statsLoading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30">
+                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
                       <div className="skeleton h-4 w-20 rounded" />
                       <div className="skeleton h-4 w-16 rounded" />
                     </div>
@@ -1226,12 +989,12 @@ export default function DashboardPage() {
                     const percentage = total > 0 ? (used / total) * 100 : 0;
                     
                     return (
-                      <div key={type} className="p-3 rounded-lg bg-slate-800/30 border border-white/[0.05]">
+                      <div key={type} className="p-3 rounded-lg bg-secondary/30 border border-border/05]">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold text-slate-200 capitalize">{type} Leave</span>
-                          <span className="text-xs text-slate-400">{used} / {total} days</span>
+                          <span className="text-sm font-semibold text-foreground capitalize">{type} Leave</span>
+                          <span className="text-xs text-muted-foreground">{used} / {total} days</span>
                         </div>
-                        <div className="w-full bg-slate-700/50 rounded-full h-2">
+                        <div className="w-full bg-secondary/50 rounded-full h-2">
                           <div 
                             className={cn(
                               "h-2 rounded-full transition-all duration-300",
@@ -1242,8 +1005,8 @@ export default function DashboardPage() {
                           />
                         </div>
                         <div className="flex justify-between mt-1">
-                          <span className="text-xs text-slate-500">Remaining: {remaining} days</span>
-                          <span className="text-xs text-slate-500">{percentage.toFixed(0)}% used</span>
+                          <span className="text-xs text-foreground">Remaining: {remaining} days</span>
+                          <span className="text-xs text-foreground">{percentage.toFixed(0)}% used</span>
                         </div>
                       </div>
                     );
@@ -1253,46 +1016,56 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Right: Status Donut (Admin) or Check-in Panel (Employee) ── */}
+          {/* ── Right: Status Donut (Admin) or Empty state for Employee ── */}
           <div className="space-y-5">
             {isAdmin ? (
-              <div className="glass-card p-5">
+              <div className="dashboard-card">
                 <h3 className="text-sm font-heading font-semibold text-slate-200 mb-4">
                   Today&apos;s Breakdown
                 </h3>
                 <StatusDonut stats={stats} loading={statsLoading} />
               </div>
             ) : (
-              <CheckInPanel onAction={handleRefresh} />
+              <div className="dashboard-card flex flex-col items-center justify-center text-center min-h-[300px]">
+                <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4">
+                  <Clock size={28} className="text-foreground" />
+                </div>
+                <h3 className="text-sm font-heading font-semibold text-slate-200 mb-2">
+                  Attendance Dashboard
+                </h3>
+                <p className="text-xs text-foreground max-w-[200px]">
+                  Use the attendance page to check in/out and track your daily attendance
+                </p>
+                <Link
+                  href="/attendance"
+                  className="mt-4 btn-primary btn-sm flex items-center gap-2"
+                >
+                  Go to Attendance
+                  <ArrowRight size={14} strokeWidth={2.5} />
+                </Link>
+              </div>
             )}
           </div>
         </div>
 
-        {/* ── Bottom grid: Check-in | Dept Stats | Activity ── */}
+        {/* ── Bottom grid: Dept Stats | Activity ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Check-in Panel (Admin only, employees have it above) */}
-          {isAdmin && (
-            <div>
-              <CheckInPanel onAction={handleRefresh} />
-            </div>
-          )}
-
           {/* Department Bar Chart (Admin/Manager only) */}
           {isAdminOrManager && (
-            <div className={cn("glass-card p-5", isEmployee && "lg:col-span-2")}>
+            <div className={cn("dashboard-card", !isAdmin && "lg:col-span-1")}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-heading font-semibold text-slate-200">
+                  <h3 className="text-sm font-heading font-semibold text-foreground">
                     By Department
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-foreground mt-0.5">
                     Today&apos;s attendance
                   </p>
                 </div>
                 <Link
                   href="/departments"
-                  className="flex items-center gap-1 text-xs text-teal-400
-                             hover:text-teal-300 transition-colors"
+                  className="flex items-center gap-1 text-xs text-foreground
+                             hover:text-primary transition-colors"
                 >
                   View all
                   <ChevronRight size={12} strokeWidth={2.5} />
@@ -1301,21 +1074,20 @@ export default function DashboardPage() {
               <DeptBarChart data={deptStats} loading={deptLoading} />
             </div>
           )}
-
-          {/* Recent Activity */}
           <div
             className={cn(
-              "glass-card p-5",
-              (!isAdminOrManager || isEmployee) && "lg:col-span-2",
-              isEmployee && !isAdminOrManager && "lg:col-span-3"
+              "dashboard-card",
+              (!isAdminOrManager || !isAdmin) && "lg:col-span-2",
+              isEmployee && !isAdminOrManager && "lg:col-span-3",
+              isAdminOrManager && !isAdmin && "lg:col-span-2"
             )}
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-heading font-semibold text-slate-200">
-                  {isEmployee ? "Your Recent Activity" : "Recent Activity"}
+                <h3 className="text-sm font-heading font-semibold text-foreground">
+                  Recent Activity
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-foreground mt-0.5">
                   {isEmployee ? "Your check-ins & leave requests" : "Latest check-ins & leave requests"}
                 </p>
               </div>
@@ -1332,61 +1104,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Quick Actions ── */}
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-heading font-semibold text-slate-200 mb-4">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            <QuickAction
-              icon={Clock}
-              label="Attendance"
-              href="/attendance"
-              color="text-teal-400"
-              bg="bg-teal-500/10"
-            />
-            <QuickAction
-              icon={CalendarOff}
-              label="Leave Request"
-              href="/leaves"
-              color="text-blue-400"
-              bg="bg-blue-500/10"
-            />
-            {isAdminOrManager && (
-              <>
-                <QuickAction
-                  icon={Users}
-                  label="Employees"
-                  href="/employees"
-                  color="text-violet-400"
-                  bg="bg-violet-500/10"
-                />
-                <QuickAction
-                  icon={BarChart3}
-                  label="Reports"
-                  href="/reports"
-                  color="text-green-400"
-                  bg="bg-green-500/10"
-                />
-                <QuickAction
-                  icon={Building2}
-                  label="Departments"
-                  href="/departments"
-                  color="text-orange-400"
-                  bg="bg-orange-500/10"
-                />
-              </>
-            )}
-            <QuickAction
-              icon={Users}
-              label="My Profile"
-              href={`/employees/${user?.id}`}
-              color="text-pink-400"
-              bg="bg-pink-500/10"
-            />
-          </div>
         </div>
-      </div>
     </DashboardLayout>
   );
 }

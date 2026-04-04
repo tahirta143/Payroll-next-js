@@ -27,7 +27,7 @@ function PageSkeleton() {
       {/* Stats cards skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="glass-card p-5 space-y-3">
+          <div key={i} className="dashboard-card space-y-3">
             <div className="flex items-center justify-between">
               <div className="skeleton h-4 w-24 rounded-md" />
               <div className="skeleton h-8 w-8 rounded-lg" />
@@ -40,11 +40,11 @@ function PageSkeleton() {
 
       {/* Charts skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 glass-card p-5 space-y-4">
+        <div className="lg:col-span-2 dashboard-card space-y-4">
           <div className="skeleton h-5 w-36 rounded-md" />
           <div className="skeleton h-48 w-full rounded-lg" />
         </div>
-        <div className="glass-card p-5 space-y-4">
+        <div className="dashboard-card space-y-4">
           <div className="skeleton h-5 w-28 rounded-md" />
           <div className="skeleton h-48 w-full rounded-lg" />
         </div>
