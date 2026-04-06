@@ -3,6 +3,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ToastProvider } from "@/hooks/useToast";
 import { ThemeProvider } from "@/hooks/useTheme";
 import ToastContainer from "@/components/ui/ToastContainer";
+import ShaderBackground from "@/components/ShaderBackground";
 
 export const metadata = {
   title: "AttendanceIQ — Enterprise Attendance Management",
@@ -55,6 +56,7 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
+              <ShaderBackground />
               {children}
               <ToastContainer />
             </ToastProvider>

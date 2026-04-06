@@ -5,6 +5,22 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────
+   Shader Background Styles
+───────────────────────────────────────────── */
+@layer base {
+    /* Ensure shader background is behind everything */
+    body {
+        position: relative;
+    }
+    
+    /* Create a stacking context for main content */
+    main, .relative, .absolute {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+/* ─────────────────────────────────────────────
    CSS Custom Properties — Dark Theme (default)
 ───────────────────────────────────────────── */
 @layer base {
