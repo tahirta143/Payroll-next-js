@@ -57,6 +57,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import dayjs from "dayjs";
+import AIChat from "@/components/AIChat";
+import PayrollInsights from "@/components/PayrollInsights";
 
 // ─────────────────────────────────────────────
 //  Chart colors

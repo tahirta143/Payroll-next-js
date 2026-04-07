@@ -20,6 +20,7 @@ import {
   Shield,
   Menu,
   X,
+  Brain,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -68,6 +69,12 @@ const NAV_ITEMS = [
     href: '/departments',
     icon: Building2,
     roles: ['admin', 'manager'],
+  },
+  {
+    label: 'AI Assistant',
+    href: '/ai',
+    icon: Brain,
+    roles: ['admin', 'manager', 'employee'],
   },
 ];
 

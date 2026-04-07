@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
+import { CosmicParallaxBg } from '@/components/ui/parallax-cosmic-background';
 import {
   Eye,
   EyeOff,
@@ -273,7 +274,9 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex overflow-hidden">
+    <>
+      <CosmicParallaxBg loop={true} />
+    <div className="min-h-screen bg-[#0F172A] flex overflow-hidden relative z-10">
 
       {/* ════════════════════════════════════════
           LEFT PANEL — Branding
@@ -704,5 +707,6 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

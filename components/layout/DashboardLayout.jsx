@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
+import FloatingAIButton from '../FloatingAIButton';
 import { cn } from '@/lib/utils';
 import { animatePageEntrance } from '@/lib/gsap';
+import { CosmicParallaxBg } from '@/components/ui/parallax-cosmic-background';
 
 // ─────────────────────────────────────────────
 //  Page loading skeleton
@@ -143,7 +145,8 @@ export default function DashboardLayout({
 
   return (
     <AuthGuard requiredRoles={requiredRoles}>
-      <div className="min-h-screen bg-background flex">
+      <CosmicParallaxBg loop={true} />
+      <div className="min-h-screen bg-background/80 flex relative z-10">
 
         {/* ── Sidebar ── */}
         <Sidebar onCollapseChange={handleCollapseChange} />
@@ -194,6 +197,7 @@ export default function DashboardLayout({
 
                 {/* Page children */}
                 <div className={cn(pageTitle || actions ? 'px-6 pb-6' : 'p-6')}>
+                  <CosmicParallaxBg loop={true} />
                   {children}
                 </div>
               </div>
@@ -204,7 +208,7 @@ export default function DashboardLayout({
           <footer className="flex-shrink-0 border-t border-white/[0.05] px-6 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
               <p className="text-xs text-slate-600">
-                © {new Date().getFullYear()} AttendanceIQ — Enterprise Attendance Management
+                {new Date().getFullYear()} AttendanceIQ — Enterprise Attendance Management
               </p>
               <div className="flex items-center gap-4">
                 <span className="text-xs text-slate-700">v1.0.0</span>
@@ -217,6 +221,9 @@ export default function DashboardLayout({
           </footer>
         </div>
       </div>
+      
+      {/* Floating AI Button */}
+      <FloatingAIButton />
     </AuthGuard>
   );
 }
